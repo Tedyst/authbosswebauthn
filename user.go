@@ -24,7 +24,7 @@ type WebauthnStorer interface {
 	authboss.ServerStorer
 
 	GetWebauthnCredentials(ctx context.Context, pid string) ([]Credential, error)
-	CreateWebauthnCredential(ctx context.Context, pid string, credential Credential) error
+	CreateWebauthnCredential(ctx context.Context, pid string, credential Credential, name string) error
 	GetUserByCredentialID(ctx context.Context, credentialID []byte) (authboss.User, error)
 }
 
@@ -86,6 +86,7 @@ func MustBeWebauthnUserValuer(validator authboss.Validator) WebauthnUserValuer {
 type FinishWebauthnCreationUserValuer interface {
 	authboss.Validator
 
+	GetCredentialName() string
 	GetCreationCredential() protocol.ParsedCredentialCreationData
 }
 

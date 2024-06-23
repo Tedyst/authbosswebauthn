@@ -171,13 +171,14 @@ func (webn *webAuthn) FinishRegistrationPost(w http.ResponseWriter, r *http.Requ
 	}
 	wnReader := MustBeFinishWebauthnCreationUserValuer(reader)
 	creationCredential := wnReader.GetCreationCredential()
+	credentialName := wnReader.GetCredentialName()
 
 	credential, err := webn.WebAuthn.CreateCredential(&webauthnUser{user: authUser, credentials: nil}, session, &creationCredential)
 	if err != nil {
 		return err
 	}
 
-	if err := storer.CreateWebauthnCredential(r.Context(), authUser.GetPID(), *credential); err != nil {
+	if err := storer.CreateWebauthnCredential(r.Context(), authUser.GetPID(), *credential, credentialName); err != nil {
 		return err
 	}
 	if err = webn.Authboss.Config.Storage.Server.Save(r.Context(), abUser); err != nil {
