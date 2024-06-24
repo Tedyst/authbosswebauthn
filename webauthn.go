@@ -232,7 +232,26 @@ func (webn *webAuthn) BeginLoginPost(w http.ResponseWriter, r *http.Request) err
 
 	user, err := webn.Authboss.Config.Storage.Server.Load(r.Context(), userValuer.GetPID())
 	if err != nil {
-		return err
+		assertion, session, err := webn.WebAuthn.BeginDiscoverableLogin()
+		if err != nil {
+			return err
+		}
+
+		sessionData, err := json.Marshal(&saveSessionStruct{
+			Discoverable: true,
+			Data:         session,
+		})
+		if err != nil {
+			return err
+		}
+
+		authboss.PutSession(w, WebauthnLoginSessionKey, string(sessionData))
+
+		data := authboss.HTMLData{
+			WebauthnLoginResponseKey: assertion.Response,
+		}
+
+		return webn.Authboss.Core.Responder.Respond(w, r, http.StatusOK, PageWebauthnLogin, data)
 	}
 
 	webnUser := MustBeWebauthnUser(user)
